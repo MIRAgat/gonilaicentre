@@ -1,0 +1,260 @@
+<?php
+include('db.php');
+
+$loggedin_id='1'; //$session id
+?>
+<?php 
+   include 'session.php'
+?>
+
+
+<?php
+
+//getting id from url
+$loggedin_id=$row['id'];
+
+
+
+//selecting data associated with this particular id
+$sql = "SELECT * FROM serviceproviderlogin WHERE id = $loggedin_id" ;
+
+$result=mysqli_query($db,$sql);
+if (!$result) {
+    printf("Error: %s\n", mysqli_error($db));
+    exit();
+}
+?>
+<?php
+include_once 'db.php';
+if(isset($_POST['save_mul']))
+{		
+$allow = array("jpg", "jpeg", "gif", "png");
+$todir = '../../userhome/cartu/carti/images/';
+$total = $_POST['total'];
+
+
+for($i=1; $i<=$total; $i++) 
+{
+	$imgupload = $_FILES["file$i"];		
+
+if ( !!$imgupload['tmp_name'] ) // is the file uploaded yet?
+{
+    $info = explode('.', strtolower( $imgupload['name']) ); // whats the extension of the file
+    if ( in_array( end($info), $allow) ) // is this file allowed
+    {
+		
+	
+        if ( move_uploaded_file( $imgupload['tmp_name'], $todir .$imgupload["name"] ) )
+		{
+		$fn6 = $_POST["vendorid"];
+		$fn = $_POST["item_name$i"];
+		$fn1 = $_POST["item_desc$i"];
+		$n_img = $imgupload["name"];	
+		$fn4 = $_POST["item_price$i"];
+		$fn5 = $_POST["category$i"];
+			
+			$sql="INSERT INTO shopping_items(vendorid,item_name,item_desc,item_image,item_price,category) VALUES('".$fn6."','".$fn."','".$fn1."','".$n_img."','".$fn4."','".$fn5."')";
+		$sql = $db->query($sql);
+	if($sql)
+	{
+		?>
+        <script>
+		alert('<?php echo $total." records was inserted !!!"; ?>');
+		window.location.href='additem.php';
+		</script>
+        <?php
+	}
+	else
+	{
+		?>
+        <script>
+		alert('error while inserting , TRY AGAIN');
+		</script>
+        <?php
+	}
+       		
+
+		}
+    }
+    else
+    {
+       echo "Invalid file"; // error this file ext is not allowed
+    }
+}
+}				
+}
+?>
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" type="image/png" href="assets/img/favicon.ico">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+	<title>Light Bootstrap Dashboard by Creative Tim</title>
+
+	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+    <meta name="viewport" content="width=device-width" />
+
+
+    <!-- Bootstrap core CSS     -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Animation library for notifications   -->
+    <link href="assets/css/animate.min.css" rel="stylesheet"/>
+
+    <!--  Light Bootstrap Table core CSS    -->
+    <link href="assets/css/light-bootstrap-dashboard.css" rel="stylesheet"/>
+
+
+    <!--  CSS for Demo Purpose, don't include it in your project     -->
+    <link href="assets/css/demo.css" rel="stylesheet" />
+
+
+    <!--     Fonts and icons     -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+    <link href="assets/css/pe-icon-7-stroke.css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="wrapper">
+   <!--- sidenav start here --->
+<?php
+			include 'sidenav.php'
+			
+			?>
+
+<!-- sidenav end here--->
+    	
+
+
+    <div class="main-panel">
+		
+		<!--topnav-->
+		<?php
+			include 'topnav.php'
+			
+			?>
+		<!---topnav end here--->
+
+
+        <div class="content">
+            <div class="container-fluid">
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title">Add Records</h4>
+                        <p class="category">Here is a subtitle for this table</p>
+
+                    </div>
+
+<div class="clearfix"></div>
+
+
+
+
+
+<div class="row">
+<div class="col-md-12">
+<div class="content">
+<a href="generate.php" class="btn btn-large btn-info"><i class="glyphicon glyphicon-plus"></i> &nbsp; Add Records</a>
+<div class="clearfix"></div><br />
+<?php
+if(isset($_POST['btn-gen-form']))
+{
+	?>
+    <form method="post" action="" enctype="multipart/form-data">
+    <input type="hidden" name="total" value="<?php echo $_POST["no_of_rec"]; ?>" />
+	 <input type="hidden" name="vendorid" value="<?php echo $id;?>">
+	<table class='table table-bordered'>
+    
+    <tr>
+    <th>##</th>
+    <th>Name</th>
+	<th>Description</th>
+	<th>Image</th> 
+	<th>Price</th> 
+	<th>Category</th> 
+    </tr>
+	<?php
+	for($i=1; $i<=$_POST["no_of_rec"]; $i++) 
+	{
+		?>
+        <tr>
+        <td><?php echo $i; ?></td>
+        <td><input type="text" name="item_name<?php echo $i; ?>" placeholder="Name" class='form-control' required/></td>
+		<td><input type="text" name="item_desc<?php echo $i; ?>" placeholder="description" class='form-control' required/></td>		
+			
+		<td><input type='file' name="file<?php echo $i; ?>" id="file"  value=''></td>        
+		<td><input type="text" name="item_price<?php echo $i; ?>" placeholder="description" class='form-control' required/></td>	
+		<td>
+		<select style = "width:100%;" class = "form-control" name ="category<?php echo $i; ?>" required = "required">
+							<option value = "">--Please select an option--</option>
+							
+				<?php $rows=$db->query("select menuName from menuitems WHERE vendorid=$loggedin_id "); 
+				while(list($menuName)=$rows->fetch_row())
+				{
+					echo"<option value = '$menuName'>$menuName</option>";
+				}
+				
+				?>
+											
+						</select>
+		</td>	
+		
+        </tr>
+        <?php
+	}
+	?>
+    <tr>
+    <td colspan="6">    
+    <button type="submit" name="save_mul" class="btn btn-primary"><i class="glyphicon glyphicon-plus"></i> &nbsp; Insert all Records</button> 
+    <a href="additem.php" class="btn btn-large btn-success"> <i class="glyphicon glyphicon-fast-backward"></i> &nbsp; Back to index</a>
+    </td>
+    </tr>
+    </table>
+    </form>
+	<?php
+}
+?>
+</div>
+</div>
+</div>
+ </div>
+            </div>
+        </div>
+
+
+        <?php 
+include 'footer.php'
+?>
+    </div>
+</div>
+
+
+</body>
+
+        <!--   Core JS Files   -->
+    <script src="assets/js/jquery-1.10.2.js" type="text/javascript"></script>
+	<script src="assets/js/bootstrap.min.js" type="text/javascript"></script>
+
+	<!--  Checkbox, Radio & Switch Plugins -->
+	<script src="assets/js/bootstrap-checkbox-radio-switch.js"></script>
+
+	<!--  Charts Plugin -->
+	<script src="assets/js/chartist.min.js"></script>
+
+    <!--  Notifications Plugin    -->
+    <script src="assets/js/bootstrap-notify.js"></script>
+
+    <!--  Google Maps Plugin    -->
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+
+    <!-- Light Bootstrap Table Core javascript and methods for Demo purpose -->
+	<script src="assets/js/light-bootstrap-dashboard.js"></script>
+
+	<!-- Light Bootstrap Table DEMO methods, don't include it in your project! -->
+	<script src="assets/js/demo.js"></script>
+
+</html>
